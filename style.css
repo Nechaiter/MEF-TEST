@@ -1,0 +1,36 @@
+.table-header {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.scrollable-table-container {
+    max-height: 90vh;  /* Altura máxima del contenedor */
+    overflow: auto;    /* Scroll automático cuando se supera la altura */
+    margin: 20px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.sticky-header thead th {
+    position: sticky;
+    top: 0;
+    background-color: #2d3035; /* Color del header original */
+    z-index: 1;
+}
+
+.action-buttons .btn {
+    margin: 2px;
+    white-space: nowrap;
+}
+
+/* Mantener el estilo de Bootstrap para tablas */
+.table {
+    margin-bottom: 0;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.075);
+}
