@@ -6,6 +6,7 @@ IDS=[   "2569d4fa-eade-4a03-b769-db9be79b7694", //enero
         "a1416e34-8ce8-4e5c-aaf1-7d8876896427", //Junio
         "843f906c-e67e-4b04-9063-055c7bba8a72", //Julio
         'c38a42a5-f52b-42cd-97ae-f85ab9fec4a0', //Agosto
+        "b1acb29c-1083-4db5-a8e1-a8ae8bbf2b1c", //Septiempre
         "43a8f21d-34d7-4765-a6de-0015b88c6ae5", //octubre
         "f4839b66-3580-4daf-95f6-c2e80ddf8f8f", //Noviembre
         "564dc549-dd01-42db-b1b0-bafe135f4c35"  //Diciembre
@@ -14,57 +15,117 @@ IDS=[   "2569d4fa-eade-4a03-b769-db9be79b7694", //enero
 //Direccion api, tiene un limite de 100 y en la respuesta tiene pre calculado el query de los restantes
 url='https://datos.gob.cl/api/3/action/datastore_search?resource_id=' 
 
+//Falto agregar alguna manera de cargas los siguientes 100 registros cuando la api indique que haya mas
 
-function SolicitarDatos(key){
-    fetch(url+key)
-    .then (response => response.json())
-    .then(data => { 
-        columnas=data.result.fields //columas de todas las filas
-        filas=data.result.records
-        console.log(columnas)
-        console.log(filas)
-        CheckColumnas(columnas)
-        insertarFilas(filas)
-        
-    });
+const dataTableOptions = {
+    scrollX: true,
+    scrollCollapse: true,
+    scrollY: 'calc(100vh - 40vh)',
+    fixedHeader: true,
+    lengthMenu: [5, 10, 15, 20, 100],
+    columnDefs: [
+        { className: "text-center", targets: "_all" },
+        { orderable: false, targets: [1, 2, 15] },
+        { searchable: false, targets: [1,2] },
+        { width: "250px", targets: [4, 6, 8, 10, 12, 14, 17, 18] }
+    ],
+    pageLength: 10,
+    destroy: true,
+    language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "Ningún Registro Encontrado",
+        info: "Mostrando de _START_ a _END_ de un total de _TOTAL_ registros",
+        infoEmpty: "Informacion no encontrada",
+        infoFiltered: "(filtrados desde _MAX_ registros totales)",
+        search: "Buscar:",
+        loadingRecords: "Cargando...",
+        paginate: {
+            first: "Primero",
+            last: "Último",
+            next: "Siguiente",
+            previous: "Anterior"
+        }
+    }
+};
+
+let dataTable;
+let dataTableIsInitialized = false;
+
+const initDataTable = async () => {
+    if (dataTableIsInitialized)
+        dataTable.destroy()
+        dataTableIsInitialized=false
+
+    dataTable = $("#datatable_inversiones").DataTable(dataTableOptions);
+    dataTableIsInitialized=true;
 }
 
-function CheckColumnas(columnas){
-    const current_columnas = document.querySelectorAll('thead th')
-    const nombre_columnas = Array.from(current_columnas).map(col => col.textContent);
-    const tbody=document.querySelector('tbody');
+
+function SolicitarDatos(key){
+    fetch(url+IDS[key])
+    .then (response => response.json())
+    .then(data => { 
+        console.log(data)        
+        
+        const tabla = document.getElementById("tabla")
+        console.log(tabla)
+        tabla.innerHTML=`<table class="table table-bordered table-hover table-fixed" id="datatable_inversiones">
+                    <thead class="table-light">
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`
+        InsertarColumnas(data.result.fields)
+        insertarFilas(data.result.records)
+        initDataTable()
+    })
+    .catch(error =>{
+        alert(error);
+    })
+}
+
+function InsertarColumnas(columnas){
+    // const current_columnas = document.querySelectorAll('thead th')
     const thead=document.querySelector('thead');
-    for (let i of columnas){
-        console.log(i)
-        if (!nombre_columnas.includes(i.id))            
-            tbody.innerHTML=''
-            thead.innerHTML=''
-            const tr = document.createElement('tr')
-                thead.appendChild(tr)
-            columnas.forEach(columna =>{
-                const th = document.createElement('th')
-                th.textContent=columna.id
-                tr.appendChild(th)
-            return false
-            })
-    }
-    return true
+    const tr = document.createElement('tr')
+    columnas.forEach(columna =>{
+        const th = document.createElement('th')
+        th.textContent = columna.id
+        tr.appendChild(th)
+    });
+    thead.appendChild(tr)
+
 }
 
 function insertarFilas(filas){
+    const tbody = document.querySelector("tbody");
     filas.forEach(fila => {
         const tr = document.createElement('tr');
-        document.querySelector('tbody').appendChild(tr)
-        Object.values(fila).forEach(valorColumna =>{
-            const td= document.createElement('td')
-            td.textContent= valorColumna
-            tr.appendChild(td)
-        })
+
+        
+        Object.values(fila).forEach(valorColumna => {
+            const td = document.createElement('td');
+            td.textContent = valorColumna;
+            tr.appendChild(td);
+        });
+        
+        tbody.appendChild(tr); // Inserta aquí la fila
     });
 }
 
-
-function DatosEnero(){
-    SolicitarDatos(IDS[0])
+function selectMonth(index) {
+    // Update active class
+    const links = document.querySelectorAll('.resource-sidebar .list-group-item');
+    links.forEach(link => link.classList.remove('active'));
+    links[index].classList.add('active');
+    
+    // Update header title
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    document.querySelector('.sticky-header h2').textContent = `Inversiones ${months[index]} 2024 (en pesos)`;
+    
+    // Request data for selected month
+    SolicitarDatos(index);
 }
+
 
