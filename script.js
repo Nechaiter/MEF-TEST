@@ -63,8 +63,18 @@ const initDataTable = async () => {
 
 function SolicitarDatos(key){
     fetch(url+IDS[key])
-    .then (response => response.json())
+    .then (response => {
+        if (!response.ok) {
+            throw new Error(`Error de red: ${response.status} - ${response.statusText}`);
+        }
+        return response.json()
+    })
     .then(data => { 
+        if (!data.result || !data.result.fields || !data.result.records) {
+            throw new Error('Estructura de datos incorrecta en la respuesta');
+        }
+        
+        
         console.log(data)        
         
         const tabla = document.getElementById("tabla")
@@ -80,7 +90,14 @@ function SolicitarDatos(key){
         initDataTable()
     })
     .catch(error =>{
-        alert(error);
+        console.error(error);
+        const tabla = document.getElementById("tabla");
+        tabla.innerHTML=`
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Error al cargar datos</h4>
+                <p>${error.message || 'No se pudieron cargar los datos solicitados'}</p>
+            </div>
+        `;
     })
 }
 
