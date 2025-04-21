@@ -126,22 +126,22 @@ function insertarFilas(filas){
             tr.appendChild(td);
         });
         
-        tbody.appendChild(tr); // Inserta aquí la fila
+        tbody.appendChild(tr);
     });
 }
 
 function selectMonth(index) {
-    // Update active class
+    
     const links = document.querySelectorAll('.resource-sidebar .list-group-item');
     links.forEach(link => link.classList.remove('active'));
     links[index].classList.add('active');
     
-    // Update header title
+    
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     document.querySelector('.sticky-header h2').textContent = `Inversiones ${months[index]} 2024 (en pesos)`;
     
-    // Request data for selected month
+    
     SolicitarDatos(index);
 }
 
